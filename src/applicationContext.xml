@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:p="http://www.springframework.org/schema/p" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:aop="http://www.springframework.org/schema/aop"
+	xsi:schemaLocation="
+        http://www.springframework.org/schema/beans 
+        http://www.springframework.org/schema/beans/spring-beans.xsd
+        http://www.springframework.org/schema/aop
+        http://www.springframework.org/schema/aop/spring-aop-3.2.xsd">
+
+	<!--在bean中使用构造注入name的值  -->
+	<bean id="userService" class="com.thxy.service.UserServiceImpl">
+		<property name="name" value="张三"></property>
+	</bean>
+
+	<!-- 添加一个新bean，使用p命名空间注入属性 -->
+	<bean id="p" p:name="p注入" class="com.thxy.service.UserServiceImpl">
+	</bean>
+
+	<!-- 使用spring的aop配置切入点为该类要被增强的方法	 -->
+	<aop:config>
+		<aop:pointcut
+			expression="execution(public void com.thxy.service.*.*(..))"
+			id="pointcut" />
+	</aop:config>
+
+	<!-- 配置包含增加方法的Bean，配置异常抛出增强的引用及其方法 -->
+	<bean id="myExceptionAdvice"
+		class="com.thxy.advice.MyExceptionAdvice" />
+
+	<aop:config>
+		<aop:pointcut
+			expression="execution(public void com.thxy.service.UserServiceImpl.say(..))"
+			id="pointcut" />
+		<aop:aspect ref="myExceptionAdvice">
+			<aop:after-throwing method="afterThrowing"
+				pointcut-ref="pointcut" throwing="re"></aop:after-throwing>
+		</aop:aspect>
+	</aop:config>
+
+	<!-- 添加配置最终增强的引用及其方法 -->
+	<bean id="afterLogger" class="com.thxy.advice.AfterLogger" />
+
+	<aop:config>
+		<aop:aspect ref="afterLogger">
+			<aop:after method="after" pointcut-ref="pointcut" />
+		</aop:aspect>
+	</aop:config>
+
+	<!-- 添加配置最终增强的引用及其方法 -->
+	<bean id="aoundLogger" class="com.thxy.advice.AroundLogger"></bean>
+	<aop:config>
+		<aop:pointcut
+			expression="execution(public void com.thxy.service.UserServiceImpl.say(..))"
+			id="pointcut" />
+		<aop:aspect ref="aoundLogger">
+			<aop:around method="around" pointcut-ref="pointcut"/>
+		</aop:aspect>
+	</aop:config>
+
+</beans>
+        
